@@ -1,0 +1,6 @@
+E:\programming\C#\jdlingyuImageCollector\jdlingyuImageCollector\bin\Release\jdlingyuImageCollector.exe.config
+E:\programming\C#\jdlingyuImageCollector\jdlingyuImageCollector\bin\Release\jdlingyuImageCollector.exe
+E:\programming\C#\jdlingyuImageCollector\jdlingyuImageCollector\bin\Release\jdlingyuImageCollector.pdb
+E:\programming\C#\jdlingyuImageCollector\jdlingyuImageCollector\obj\Release\jdlingyuImageCollector.exe
+E:\programming\C#\jdlingyuImageCollector\jdlingyuImageCollector\obj\Release\jdlingyuImageCollector.pdb
+E:\programming\C#\jdlingyuImageCollector\jdlingyuImageCollector\obj\Release\jdlingyuImageCollector.csprojResolveAssemblyReference.cache
