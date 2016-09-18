@@ -1,4 +1,5 @@
 # jdlingyuImageCollector
+
 	程序使用方法很简单，隔一段时间打开JdlingyuImageCollector.exe就可以了，它会自动检查jdlingyu上的更新，然后下载更新的内容，顺便收集百度盘链接。如果没有更新的话也会显示“下载完成”。
 	嫌日志占地方的话可以删掉（不过程序还是会自动生成），但是不要删除catalog.txt和downloaded.txt。
 	应该是必须要有.NET Framework组件才能正常运行的（我没有试过没有会怎么样），不过大部分电脑应该都有吧。
