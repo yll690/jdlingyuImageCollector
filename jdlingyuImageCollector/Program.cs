@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -107,7 +107,7 @@ namespace jdlingyuImageCollector
                         }
                         indexs[lengthOfCatalog] = Convert.ToInt32(temp);
                         lengthOfCatalog++;
-                        Console.WriteLine(matches[i].ToString());
+                        clog(matches[i].ToString());
                     }
                     Console.WriteLine();
 
@@ -212,7 +212,7 @@ namespace jdlingyuImageCollector
             string baidupan = url + "\n";
             int indexOfBaidupan = -1, endOfBaidupan = -1;
             indexOfBaidupan = HTML.IndexOf("链接：http://pan.baidu.com/s/");
-            endOfBaidupan = HTML.IndexOf("/>", indexOfBaidupan);
+            endOfBaidupan = HTML.IndexOf("\" />", indexOfBaidupan);
             if (indexOfBaidupan < 0 || endOfBaidupan < 0)
                 return;
             baidupan += HTML.Substring(indexOfBaidupan, endOfBaidupan - indexOfBaidupan) + "\n\n";
@@ -226,7 +226,7 @@ namespace jdlingyuImageCollector
             string HTML = "";
             int index = 0,indexOfCatalog = -1,endOfCatalog=-1 ,
                 indexOfPostImage = -1, endOfMainNavi = -1;
-            Regex pictureLinks = new Regex("<a href=\"[a-z0-9:/.\\-_]{10,}.(jpg|png)\">");
+            Regex pictureLinks = new Regex("<a href=\"[A-Za-z0-9:/.\\-_]{10,}.(jpg|png)\">");
             MatchCollection matches;
 
             if (File.Exists(fileLocation + "catalog.txt"))
@@ -258,6 +258,7 @@ namespace jdlingyuImageCollector
                 try
                 {
                     HTML = GetWebClient(url);
+                    HTML = HTML.Replace("\\\"", "\"");
                     log("内容页加载成功");
                     if (HTML.IndexOf("链接：http://pan.baidu.com/s/") > 0)
                     {
@@ -275,7 +276,7 @@ namespace jdlingyuImageCollector
                     HTML = HTML.Substring(indexOfPostImage, endOfMainNavi - indexOfPostImage);
 
                     collectInformation(HTML, ref pics);
-                    log("\nIndex:" + pics.index.ToString() + "\nUrl:" + pics.url + "\nTitle:" + pics.title + "\nDatetime:" + pics.datetime + "\nAuthor" + pics.author + "\nTags:" + pics.tags + "\n");
+                    log("\nIndex:" + pics.index.ToString() + "\nUrl:" + pics.url + "\nTitle:" + pics.title + "\nDatetime:" + pics.datetime + "\nAuthor:" + pics.author + "\nTags:" + pics.tags + "\n");
 
                     string newDirectory = formatFileName(pics.index + "_" + pics.title + "_" + pics.tags);
                     if (!Directory.Exists(pictureLocation + newDirectory))
