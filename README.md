@@ -20,4 +20,5 @@
 	* domain:jdlingyu网站域名，小网站，各方面都不稳定，如果域名变动了，需要手动修改。
 	* pictureLocation:存放图片的位置，注意最后一定要有斜杠
 	* logToFile:是否把日志写入文件，只能为True或False
+
 以上文件都会保存在程序根目录。
