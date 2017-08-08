@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,12 +20,15 @@ namespace jdlingyuImageCollector
         public string[] picUrls = new string[50];
 
     }
+
     class Program
     {
-        public static string pictureLocation = Directory.GetCurrentDirectory() + "\\";
-        public static string fileLocation = Directory.GetCurrentDirectory() + "\\";
+        public static string currentDirectory = Directory.GetCurrentDirectory() + "\\";
+        public static Options options = new Options();
         public static string url = "";
-
+        public static string domain = "http://www.jdlingyu.wang/";
+        public static string pictureLocation = currentDirectory;
+        public static bool logToFile = true;
         //获取HTML
         static string GetWebClient(string url)
         {
@@ -51,25 +54,27 @@ namespace jdlingyuImageCollector
         static void log(string logText)
         {
             Console.WriteLine(logText);
-            saveFile(fileLocation + "log.txt", DateTime.Now + " " + logText + "\n");
+            if (logToFile)
+                saveFile(currentDirectory + "log.txt", DateTime.Now + " " + logText + "\n");
         }
 
         static void clog(string logText)
         {
             Console.WriteLine(logText);
-            saveFile(fileLocation + "catalogLog.txt", DateTime.Now + " " + logText + "\n");
+            if (logToFile)
+                saveFile(currentDirectory + "catalogLog.txt", DateTime.Now + " " + logText + "\n");
         }
 
         //收集目录
         static void collectIndex()
         {
             string oldCatalog = "";
-            if (File.Exists(fileLocation + "catalog.txt"))
-                oldCatalog = File.ReadAllText(fileLocation + "catalog.txt", Encoding.Default);
+            if (File.Exists(currentDirectory + "catalog.txt"))
+                oldCatalog = File.ReadAllText(currentDirectory + "catalog.txt", Encoding.Default);
 
-            Regex indexRE = new Regex("http://www.jdlingyu.moe/[0-9]{1,6}/");
+            Regex indexRE = new Regex(domain + "[0-9]{1,6}/");
             MatchCollection matches;
-            string HTML = "", catalog = "", temp="";
+            string HTML = "", catalog = "", temp = "";
             int index = 1, lengthOfCatalog = 0, startPosition = -1, endPosition = -1, retrytimes = 5;
             bool finished = false;
             int[] indexs = new int[100000];
@@ -78,7 +83,7 @@ namespace jdlingyuImageCollector
                 clog("正在加载目录页" + index);
                 try
                 {
-                    HTML = GetWebClient("http://www.jdlingyu.moe/page/" + index + "/");
+                    HTML = GetWebClient(domain + "page/" + index + "/");
                     retrytimes = 5;
                     startPosition = HTML.IndexOf("<div id=\"postlist\" class=\"clx\">");
                     endPosition = HTML.IndexOf("<div id=\"pagenavi-fixed\">", startPosition);
@@ -98,7 +103,7 @@ namespace jdlingyuImageCollector
                     matches = indexRE.Matches(HTML);
                     for (int i = 0; i < matches.Count; i += 2)
                     {
-                        temp = matches[i].ToString().Substring(24, matches[i].ToString().IndexOf("/", 24)-24);
+                        temp = matches[i].ToString().Substring(domain.Length, matches[i].ToString().IndexOf("/", domain.Length) - domain.Length);
                         if (oldCatalog.IndexOf(temp) >= 0)
                         {
                             clog("识别目录列表完毕");
@@ -120,14 +125,14 @@ namespace jdlingyuImageCollector
                 }
                 index++;
             }
-            
+
             int[] indexList = new int[lengthOfCatalog];
             for (int i = 0; i < lengthOfCatalog; i++)
                 indexList[i] = indexs[i];
             Array.Sort(indexList);
             for (int i = 0; i < lengthOfCatalog; i++)
                 catalog += indexList[i].ToString() + "\n";
-            saveFile(fileLocation + "catalog.txt", catalog);
+            saveFile(currentDirectory + "catalog.txt", catalog);
         }
 
         //收集信息
@@ -202,7 +207,7 @@ namespace jdlingyuImageCollector
             catch (WebException error)
             {
                 log("下载图片" + picUrl + "失败，" + error.Message);
-                saveFile(fileLocation + "errorlist.txt", url + "\n" + picUrl + "\n\n");
+                saveFile(currentDirectory + "errorlist.txt", url + "\n" + picUrl + "\n\n");
             }
         }
 
@@ -216,7 +221,7 @@ namespace jdlingyuImageCollector
             if (indexOfBaidupan < 0 || endOfBaidupan < 0)
                 return;
             baidupan += HTML.Substring(indexOfBaidupan, endOfBaidupan - indexOfBaidupan) + "\n\n";
-            saveFile(fileLocation + "baidupan.txt", baidupan);
+            saveFile(currentDirectory + "baidupan.txt", baidupan);
         }
 
         //收集图片
@@ -224,31 +229,31 @@ namespace jdlingyuImageCollector
         {
             string catalog = "", downloaded = "";
             string HTML = "";
-            int index = 0,indexOfCatalog = -1,endOfCatalog=-1 ,
+            int index = 0, indexOfCatalog = -1, endOfCatalog = -1,
                 indexOfPostImage = -1, endOfMainNavi = -1;
             Regex pictureLinks = new Regex("<a href=\"[A-Za-z0-9:/.\\-_]{10,}.(jpg|png)\">");
             MatchCollection matches;
 
-            if (File.Exists(fileLocation + "catalog.txt"))
-                catalog = File.ReadAllText(fileLocation + "catalog.txt", Encoding.Default);
+            if (File.Exists(currentDirectory + "catalog.txt"))
+                catalog = File.ReadAllText(currentDirectory + "catalog.txt", Encoding.Default);
             else
                 log("没有找到目录文件！");
-            if (File.Exists(fileLocation + "downloaded.txt"))
-                downloaded = File.ReadAllText(fileLocation + "downloaded.txt", Encoding.Default);
+            if (File.Exists(currentDirectory + "downloaded.txt"))
+                downloaded = File.ReadAllText(currentDirectory + "downloaded.txt", Encoding.Default);
 
             while (true)
             {
                 endOfCatalog = catalog.IndexOf('\n', indexOfCatalog + 1);
                 if (endOfCatalog < 0)
                     break;
-                index = Convert.ToInt32(catalog.Substring(indexOfCatalog + 1, endOfCatalog- indexOfCatalog - 1));
+                index = Convert.ToInt32(catalog.Substring(indexOfCatalog + 1, endOfCatalog - indexOfCatalog - 1));
                 indexOfCatalog = catalog.IndexOf('\n', indexOfCatalog + 1);
                 if (downloaded.IndexOf(index.ToString()) >= 0)
                     continue;
 
                 pictures pics = new pictures();
                 url = "http://www.jdlingyu.moe/" + index.ToString() + "/";
-                
+
                 if (indexOfCatalog < 0)
                     break;
                 pics.url = url;
@@ -270,7 +275,7 @@ namespace jdlingyuImageCollector
                     if (indexOfPostImage < 0 || endOfMainNavi <= 0)
                     {
                         log("查找图片所在HTML段出错");
-                        saveFile(fileLocation + "errorlist.txt", url + "\n\n");
+                        saveFile(currentDirectory + "errorlist.txt", url + "\n\n");
                         continue;
                     }
                     HTML = HTML.Substring(indexOfPostImage, endOfMainNavi - indexOfPostImage);
@@ -293,67 +298,75 @@ namespace jdlingyuImageCollector
                     log("\n");
 
                     downloaded += pics.index + "\n";
-                    saveFile(fileLocation + "downloaded.txt", pics.index + "\n");
+                    saveFile(currentDirectory + "downloaded.txt", pics.index + "\n");
                 }
                 catch (WebException error)
                 {
                     log("加载内容页失败，" + error.Message + "\n");
-                    saveFile(fileLocation + "errorlist.txt", url + "\n\n");
+                    saveFile(currentDirectory + "errorlist.txt", url + "\n\n");
                 }
             }
         }
 
-        static void input()
+        static bool initialize()
         {
-            string input;
-            bool inputCorrect = false;
-            Console.WriteLine("是否自定义文件保存位置？输入y或n，默认保存在程序所在位置:" + fileLocation);
-            while (!inputCorrect)
+
+            if (options.Count == 0)
             {
-                input = Console.ReadLine();
-                switch (input)
+                options.Add("domain", domain);
+                options.Add("pictureLocation", pictureLocation);
+                options.Add("logToFile", logToFile.ToString());
+                options.saveAllOptions();
+                Console.WriteLine("默认的设置为：");
+                Console.WriteLine(options.allOptions());
+                Console.WriteLine("是否需要更改？（输入y或n）");
+                bool wrongInput = true;
+                while (wrongInput)
                 {
-                    case "y":
-                        {
-                            inputCorrect = true;
-                            Console.WriteLine("输入文件保存位置，例如E:\\jdlingyu\\");
-                            input = Console.ReadLine();
-                            if (input.LastIndexOf("\\") != input.Length - 1)
-                                input += "\\";
-                            pictureLocation = input;
-                            if (!Directory.Exists(pictureLocation))
-                                Directory.CreateDirectory(pictureLocation);
-                            saveFile(fileLocation + "\\pictureLocation.ini", input);
+                    switch (Console.ReadLine().ToLower())
+                    {
+                        case "y":
+                            Console.WriteLine("请手动修改此程序根目录下的options.ini，然后重启程序。");
+                            wrongInput = false;
+                            return false;
+                        case "n":
+                            wrongInput = false;
                             break;
-                        }
-                    case "n":
-                        {
-                            inputCorrect = true;
-                            saveFile(fileLocation + "\\pictureLocation.ini", fileLocation);
+                        default:
+                            Console.WriteLine("输入错误，请重新输入");
                             break;
-                        }
-                    default:
-                        {
-                            Console.WriteLine("请重新输入");
-                            break;
-                        }
+                    }
                 }
             }
+            else
+            {
+                domain = options["domain"];
+                pictureLocation = options["pictureLocation"];
+                logToFile = Convert.ToBoolean(options["logToFile"]);
+                Console.WriteLine(options.allOptions());
+            }
+            return true;
         }
 
         static void Main(string[] args)
         {
-            Console.WriteLine("程序所在位置：" + fileLocation);
-            if (File.Exists(fileLocation + "pictureLocation.ini"))
+            try
             {
-                pictureLocation = File.ReadAllText(fileLocation + "pictureLocation.ini", Encoding.Default);
-                Console.WriteLine("文件保存位置：" + pictureLocation);
+                if (!initialize())
+                    return;
+                collectIndex();
+                collectPictures();
             }
-            else
-                input();
-            collectIndex();
-            collectPictures();
+            catch(Exception e)
+            {
+                Console.WriteLine(e.StackTrace);
+                Console.WriteLine(e.Message);
+                Console.WriteLine("出现意外错误，按下任意按键以退出");
+                Console.ReadKey();
+                return;
+            }
             Console.WriteLine("\n下载完成\n");
+            Console.WriteLine("按下任意按键以退出");
             Console.ReadKey();
         }
     }
