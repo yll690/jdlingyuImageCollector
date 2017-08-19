@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Net;
 
-namespace collectResourcesOfHACG
+namespace jdlingyuImageCollector
 {
     class WebClient : System.Net.WebClient
     {
