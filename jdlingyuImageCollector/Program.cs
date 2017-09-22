@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -292,7 +292,7 @@ namespace jdlingyuImageCollector
                 if (downloaded.Contains(index))
                     continue;
                 Pictures pics = new Pictures();
-                url = "http://www.jdlingyu.moe/" + index.ToString() + "/";
+                url = domain + index.ToString() + "/";
                 pics.url = url;
                 pics.index = index;
 
