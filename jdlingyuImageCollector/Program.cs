@@ -125,7 +125,7 @@ namespace jdlingyuImageCollector
             StringBuilder catalogSB = new StringBuilder();
             while (!finished && retrytimes > 0)
             {
-                clog("正在加载目录页" + index);
+                clog("正在加载目录页" + (index + 1));
                 try
                 {
                     HTML = GetWebClient(domain + "page/" + index + "/");
@@ -136,7 +136,7 @@ namespace jdlingyuImageCollector
                     {
                         if (HTML.IndexOf("你所找的文章不存在! 我们强烈的为你推荐以下文章") >= 0)
                         {
-                            clog("识别目录列表完毕");
+                            clog("\n识别目录列表完毕");
                             finished = true;
                             break;
                         }
@@ -153,7 +153,7 @@ namespace jdlingyuImageCollector
                             continue;
                         else if (catalog.Contains(temp))
                         {
-                            clog("识别目录列表完毕");
+                            clog("\n识别目录列表完毕");
                             finished = true;
                             break;
                         }
@@ -166,8 +166,12 @@ namespace jdlingyuImageCollector
                 catch (WebException error)
                 {
                     clog("加载失败，" + error.Message, true);
-                    Console.WriteLine(retrytimes + "次重试后将结束识别目录列表\n");
+                    if(retrytimes>1)
+                        Console.WriteLine(retrytimes - 1 + "次重试后将结束识别目录列表\n");
+                    else
+                        Console.WriteLine("\n识别目录列表完毕\n");
                     retrytimes--;
+                    index--;
                 }
                 index++;
             }
