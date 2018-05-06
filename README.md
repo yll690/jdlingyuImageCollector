@@ -1,8 +1,8 @@
-#jdlingyuImageCollector  
-程序使用方法很简单，隔一段时间打开JdlingyuImageCollector.exe就可以了，它会自动检查jdlingyu上的更新，然后下载更新的内容，如果没有更新的话也会显示“下载完成”。  
-它还可以收集网页上的百度盘链接，即使是写着“本文隐藏内容 登陆 后才可以浏览”的隐藏内容，也能收集到，因为不知为什么他们直接把隐藏内容写在了HTML里。
-嫌日志烦的话可以删掉，并且把options.ini里的logToFile=True改为logToFile=False，但是不要删除catalog.txt和downloaded.txt。  
-应该是必须要有.NET Framework组件才能正常运行的（我没有试过没有会怎么样），不过大部分电脑应该都有吧。  
+#使用方法和介绍
+程序使用方法很简单，隔一段时间打开JdlingyuImageCollector.exe就可以了，它会自动检查jdlingyu上的更新，然后下载更新的内容，如果没有更新的话也会显示“下载完成”。
+它还可以收集网页上的百度盘链接，~~即使是写着“本文隐藏内容 登陆 后才可以浏览”的隐藏内容，也能收集到，因为不知为什么他们直接把隐藏内容写在了HTML里。~~，现在他们已经不把隐藏内容直接写在HTML里了，所以收集不到了。
+嫌日志烦的话可以删掉，并且把options.ini里的logToFile=True改为logToFile=False，但是不要删除catalog.txt和downloaded.txt。  
+应该是必须要有.NET Framework组件才能正常运行的（我没有试过没有会怎么样），不过大部分电脑应该都有吧。  
 文件夹命名规范：序号_标题_分类_标签。  
 
 可能存在的bug：  
@@ -20,3 +20,7 @@
 * options.ini：存放程序设置的地方，详细的设置说明在\jdlingyuImageCollector\Resources\options.ini里
 
 以上文件都会保存在程序根目录。
+
+
+#更新日志
+* 1.6 ：针对18年4月底jdlingyu的网站更新的更新，重写了网页分隔和查找的参数，以匹配新网站的数据格式。
