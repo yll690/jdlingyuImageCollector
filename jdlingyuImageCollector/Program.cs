@@ -119,30 +119,31 @@ namespace jdlingyuImageCollector
             Regex indexRE = new Regex(domain + "[0-9]{1,6}/");
             MatchCollection matches;
             string HTML = "";
-            int index = 0, lengthOfCatalog = 0, startPosition = -1, endPosition = -1, retrytimes = 5, temp = 0;
+            int index = 1, lengthOfCatalog = 0, startPosition = -1, endPosition = -1, retrytimes = 5, temp = 0;
             bool finished = false;
             List<int> newCatalog = new List<int>();
             StringBuilder catalogSB = new StringBuilder();
             while (!finished && retrytimes > 0)
             {
-                clog("正在加载目录页" + (index + 1));
+                string catalogUrl = domain + "page/" + index + "/";
+                clog("正在加载目录页" + index + ":" + catalogUrl);
                 try
                 {
-                    HTML = GetWebClient(domain + "page/" + index + "/");
-                    retrytimes = 5;
-                    startPosition = HTML.IndexOf("<div id=\"postlist\" class=\"clx\">");
-                    endPosition = HTML.IndexOf("<div id=\"pagenavi-fixed\">", startPosition);
-                    if (startPosition <= 0 || endPosition <= 0)
-                    {
+                    HTML = GetWebClient(catalogUrl);
+                    startPosition = HTML.IndexOf("<div id=\"primary-home\"");//对应18年5月之后的新网页
+                    if(startPosition<=0)
                         if (HTML.IndexOf("你所找的文章不存在! 我们强烈的为你推荐以下文章") >= 0)
                         {
                             clog("\n识别目录列表完毕");
                             finished = true;
                             break;
                         }
-                        clog("目录页提取出错" + index, true);
-                        continue;
-                    }
+                    endPosition = HTML.IndexOf("<div class=\"widget-area-in\">", startPosition);
+                    //startPosition = HTML.IndexOf("<div id=\"postlist\" class=\"clx\">");
+                    //endPosition = HTML.IndexOf("<div id=\"pagenavi-fixed\">", startPosition);
+                    if (endPosition <= 0)
+                        throw new Exception("目录页提取出错:endPosition <= 0");
+
 
                     HTML = HTML.Substring(startPosition, endPosition - startPosition);
                     matches = indexRE.Matches(HTML);
@@ -162,10 +163,19 @@ namespace jdlingyuImageCollector
                         clog(matches[i].ToString());
                     }
                     Console.WriteLine();
+                    retrytimes = 5;
                 }
-                catch (WebException error)
+                catch (Exception error)
                 {
-                    clog("加载失败，" + error.Message, true);
+                    if (error.GetType() == typeof(WebException))
+                    {
+                        clog("加载失败，" + error.Message, true);
+                    }
+                    else
+                    {
+                        clog(error.Message, true);
+                    }
+
                     if(retrytimes>1)
                         Console.WriteLine(retrytimes - 1 + "次重试后将结束识别目录列表\n");
                     else
@@ -185,46 +195,63 @@ namespace jdlingyuImageCollector
             addToFile(currentDirectory + "catalog.txt", catalogSB.ToString());
         }
 
-        //收集信息
-        static void collectInformation(string HTML, ref Pictures res)
+        //收集元数据
+        static void collectMetaData(string HTML, ref Pictures res)
         {
-            int indexOfTitle = -1, endOfTitle = -1, indexOfDatetime = -1, endOfDatetime = -1, indexOfCategory = -1, endOfCategory = -1, indexOfTag = -1, endOfTag = -1;
-            log("正在收集网页信息");
+            int indexOfTitle = -1, endOfTitle = -1, indexOfDatetime = -1, endOfDatetime = -1;
+            log("正在收集元数据");
 
-            indexOfTitle = HTML.IndexOf("<h2 class=\"main-title\">");
-            endOfTitle = HTML.IndexOf("</h2>", indexOfTitle + 1);
-            if (indexOfTitle < 0 || endOfTitle <= 0)
+            indexOfTitle = HTML.IndexOf("<h1 class=\"entry-title\" ref=\"postTitle\">");
+            if (indexOfTitle < 0)
                 log("查找标题出错", true);
-            res.title = HTML.Substring(indexOfTitle + 23, endOfTitle - indexOfTitle - 23);
+            endOfTitle = HTML.IndexOf("</h1>", indexOfTitle + 1);
+            if (endOfTitle <= 0)
+                log("查找标题出错", true);
+            res.title = HTML.Substring(indexOfTitle + 40, endOfTitle - indexOfTitle - 40);
 
-            indexOfDatetime = HTML.IndexOf("<span class=\"post-span\">");
-            endOfDatetime = HTML.IndexOf("</span>", indexOfDatetime + 1);
-            if (indexOfDatetime < 0 || endOfDatetime < 0)
+            indexOfDatetime = HTML.IndexOf("<time class=\"timeago\"");
+            if (indexOfDatetime < 0)
                 log("查找日期出错", true);
-            res.datetime = HTML.Substring(indexOfDatetime + 24, endOfDatetime - indexOfDatetime - 24);
+            indexOfDatetime = HTML.IndexOf(">",indexOfDatetime);
+            endOfDatetime = HTML.IndexOf("</time>", indexOfDatetime + 1);
+            if (endOfDatetime < 0)
+                log("查找日期出错", true);
+            res.datetime = HTML.Substring(indexOfDatetime + 1, endOfDatetime - indexOfDatetime - 1);
+            log("收集元数据完成");
+        }
 
-            indexOfCategory = HTML.IndexOf("rel=\"category tag\">");
+        //收集标签
+        static void collectTags(string HTML,ref Pictures res)
+        {
+            int indexOfCategory = -1, endOfCategory = -1, indexOfTag = -1, endOfTag = -1;
+            log("正在收集标签");
+
+            indexOfCategory = HTML.IndexOf("<a class=\"list-category bg-blue-light color\"");
+            indexOfCategory = HTML.IndexOf("\">", indexOfCategory);
+            if (indexOfCategory < 0)
+                log("查找分类出错", true);
             endOfCategory = HTML.IndexOf("</a>", indexOfCategory + 1);
-            if (indexOfCategory < 0 || endOfCategory < 0)
+            if (endOfCategory < 0)
                 log("查找分类出错", true);
 
-            res.category = HTML.Substring(indexOfCategory + 19, endOfCategory - indexOfCategory - 19);
+            res.category = HTML.Substring(indexOfCategory+2, endOfCategory - indexOfCategory-2);
 
             res.tags = "";
             while (true)
             {
-                indexOfTag = HTML.IndexOf("rel=\"tag\">", indexOfTag + 1);
-                endOfTag = HTML.IndexOf("</a>", indexOfTag + 1);
-                if (indexOfTag < 0 || endOfTag < 0)
+                indexOfTag = HTML.IndexOf("\"># ", indexOfTag + 1);
+                if (indexOfTag < 0)
+                    break;
+                endOfTag = HTML.IndexOf("<span>", indexOfTag + 1);
+                if (endOfTag < 0)
                     break;
                 else if (res.tags != "")
                     res.tags += " ";
-                res.tags += HTML.Substring(indexOfTag + 10, endOfTag - indexOfTag - 10);
+                res.tags += HTML.Substring(indexOfTag + 4, endOfTag - indexOfTag - 4);
             }
             if (res.tags == "")
                 log("查找标签出错", true);
-            log("收集网页信息完成");
-
+            log("收集标签完成");
         }
 
         //规范文件名
@@ -279,7 +306,8 @@ namespace jdlingyuImageCollector
         {
             List<int> downloaded = new List<int>();
             string HTML = "";
-            Regex pictureLinks = new Regex("<a href=\"[A-Za-z0-9:/.\\-_]{10,}.(jpg|png)\">");
+            Regex pictureLinks = new Regex("src=\"[A-Za-z0-9:/.\\-_]{10,300}.(jpg|png)\"");
+            //Regex pictureLinks = new Regex("<a href=\"[A-Za-z0-9:/.\\-_]{10,}.(jpg|png)\">");
             MatchCollection matches;
 
             if (File.Exists(currentDirectory + "downloaded.txt"))
@@ -311,28 +339,55 @@ namespace jdlingyuImageCollector
                         log("检测到百度盘链接");
                         collectBaidupan(HTML);
                     }
-                    int indexOfPostImage = -1, endOfMainNavi = -1;
-                    indexOfPostImage = HTML.IndexOf("<div class=\"post image\">");
-                    endOfMainNavi = HTML.IndexOf("<div class=\"main-navi clx\">", indexOfPostImage);
-                    if (indexOfPostImage < 0 || endOfMainNavi <= 0)
+
+                    //查找元数据所在HTML段
+                    int indexOfMetaData = -1, endOfMetaData = -1;
+                    indexOfMetaData = HTML.IndexOf("<div class=\"post-meta\">");
+                    endOfMetaData = HTML.IndexOf("<div class=\"clearfix post-meta-read\"", indexOfMetaData);
+                    if (indexOfMetaData < 0 || endOfMetaData <= 0)
                     {
-                        log("查找图片所在HTML段出错", true);
+                        log("查找元数据所在HTML段出错:endPosition < 0", true);
                         addToFile(currentDirectory + "errorlist.txt", url + "\n\n");
                         continue;
                     }
-                    HTML = HTML.Substring(indexOfPostImage, endOfMainNavi - indexOfPostImage);
+                    string metaData = HTML.Substring(indexOfMetaData, endOfMetaData - indexOfMetaData);
+                    collectMetaData(metaData, ref pics);
 
-                    collectInformation(HTML, ref pics);
+                    //查找标签所在HTML段
+                    int indexOfTags = -1, endOfTags = -1;
+                    indexOfTags = HTML.IndexOf("<div class=\"zrz-post-tags l1 fs12 fl\"");
+                    endOfTags = HTML.IndexOf("</div>", indexOfTags);
+                    if (indexOfTags < 0 || endOfTags <= 0)
+                    {
+                        log("查找标签所在HTML段出错:endPosition < 0", true);
+                        addToFile(currentDirectory + "errorlist.txt", url + "\n\n");
+                        continue;
+                    }
+                    string tags = HTML.Substring(indexOfTags, endOfTags - indexOfTags);
+                    collectTags(tags, ref pics);
+
                     log("\nIndex:" + pics.index.ToString() + "\nUrl:" + pics.url + "\nTitle:" + pics.title + "\nDatetime:" + pics.datetime + "\nCategory:" + pics.category + "\nTags:" + pics.tags + "\n");
-
+                    
                     string newDirectory = formatFileName(pics.index + "_" + pics.title + "_" + pics.category + "_" + pics.tags);
                     if (!Directory.Exists(pictureLocation + newDirectory))
                         Directory.CreateDirectory(pictureLocation + newDirectory);
 
-                    matches = pictureLinks.Matches(HTML);
+                    //查找图片所在HTML段
+                    int indexOfPicture = -1, endOfPicture = -1;
+                    indexOfPicture = HTML.IndexOf("<div id=\"entry-content\"",endOfMetaData);
+                    endOfPicture = HTML.IndexOf("<div class=\"share-box fs12\"", indexOfPicture);
+                    if (indexOfPicture < 0 || endOfPicture <= 0)
+                    {
+                        log("查找图片所在HTML段出错:endPosition < 0", true);
+                        addToFile(currentDirectory + "errorlist.txt", url + "\n\n");
+                        continue;
+                    }
+                    string pictureHtml= HTML.Substring(indexOfPicture, endOfPicture - indexOfPicture);
+                    //查找图片
+                    matches = pictureLinks.Matches(pictureHtml);
                     for (int i = 0; i < matches.Count; i++)
                     {
-                        pics.picUrls.Add(matches[i].ToString().Substring(9, matches[i].ToString().Length - 11));
+                        pics.picUrls.Add(matches[i].ToString().Substring(5, matches[i].ToString().Length - 6));
                         log("正在下载图片：" + pics.picUrls[i]);
                         download(pics.picUrls[i], pictureLocation + newDirectory + "\\");
                     }
