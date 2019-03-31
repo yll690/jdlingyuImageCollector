@@ -343,7 +343,7 @@ namespace jdlingyuImageCollector
                     //查找元数据所在HTML段
                     int indexOfMetaData = -1, endOfMetaData = -1;
                     indexOfMetaData = HTML.IndexOf("<div class=\"post-meta\">");
-                    endOfMetaData = HTML.IndexOf("<div class=\"clearfix post-meta-read\"", indexOfMetaData);
+                    endOfMetaData = HTML.IndexOf("<div id=\"entry-content\"", indexOfMetaData);
                     if (indexOfMetaData < 0 || endOfMetaData <= 0)
                     {
                         log("查找元数据所在HTML段出错:endPosition < 0", true);
@@ -355,7 +355,7 @@ namespace jdlingyuImageCollector
 
                     //查找标签所在HTML段
                     int indexOfTags = -1, endOfTags = -1;
-                    indexOfTags = HTML.IndexOf("<div class=\"zrz-post-tags l1 fs12 fl\"");
+                    indexOfTags = HTML.IndexOf("<div class=\"zrz-post-tags l1 fs12\"");
                     endOfTags = HTML.IndexOf("</div>", indexOfTags);
                     if (indexOfTags < 0 || endOfTags <= 0)
                     {
