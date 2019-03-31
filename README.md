@@ -27,8 +27,3 @@
 * options.ini：存放程序设置的地方，详细的设置说明在\jdlingyuImageCollector\Resources\options.ini里
 
 以上文件都会保存在程序根目录。
-
-
-# 更新日志
-
-* 1.6 ：针对18年4月底jdlingyu的网站更新的更新，重写了网页分隔和查找的参数，以匹配新网站的数据格式。
