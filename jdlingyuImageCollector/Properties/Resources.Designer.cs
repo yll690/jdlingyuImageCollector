@@ -19,7 +19,7 @@ namespace jdlingyuImageCollector.Properties {
     // 类通过类似于 ResGen 或 Visual Studio 的工具自动生成的。
     // 若要添加或移除成员，请编辑 .ResX 文件，然后重新运行 ResGen
     // (以 /str 作为命令选项)，或重新生成 VS 项目。
-    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "4.0.0.0")]
+    [global::System.CodeDom.Compiler.GeneratedCodeAttribute("System.Resources.Tools.StronglyTypedResourceBuilder", "16.0.0.0")]
     [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     internal class Resources {
@@ -47,7 +47,7 @@ namespace jdlingyuImageCollector.Properties {
         }
         
         /// <summary>
-        ///   使用此强类型资源类，为所有资源查找
+        ///   重写当前线程的 CurrentUICulture 属性
         ///   重写当前线程的 CurrentUICulture 属性。
         /// </summary>
         [global::System.ComponentModel.EditorBrowsableAttribute(global::System.ComponentModel.EditorBrowsableState.Advanced)]
@@ -62,15 +62,18 @@ namespace jdlingyuImageCollector.Properties {
         
         /// <summary>
         ///   查找类似 ;绝对领域网站域名。因为有时域名会变动，所以添加此设置
-        ///domain=http://www.jdlingyu.wang/
+        ///domain=https://www.jdlingyu.mobi/
         ///;图片的保存位置。注意不要忘了最后的反斜杠，比如E:\jdlingyu\
         ///pictureLocation=
-        ///;是否将日志写入文件。如果嫌麻烦日志多余就关掉吧
+        ///;是否将日志写入文件。如果嫌日志多余就关掉吧
         ///logToFile=True
         ///;忽略列表。个别页面可能有问题，或者说是始终挂在首页的广告之类的东西，就把它的网页序号写在忽略列表里，不同序号之间用英文的逗号隔开，比如：132,155,4356
         ///ignoreList=33537
         ///;是否从catalog.txt中第一条开始检查是否已经下载过。默认是从downloaded.txt的最后一条开始检查的。如果不小心弄乱了catalog.txt或downloaded.txt，又不想全部重下的话，暂时把这个改为True就可以了，下一次开之前最好再改回False
-        ///fromFirstIndex=False 的本地化字符串。
+        ///fromFirstIndex=False
+        ///;专题列表，用逗号隔开
+        ///collections=trait,cos,hentai,meizitu,sifang,zipai,acg
+        ///;识别目录时，连续出现maxDupCount [字符串的其余部分被截断]&quot;; 的本地化字符串。
         /// </summary>
         internal static string options {
             get {
